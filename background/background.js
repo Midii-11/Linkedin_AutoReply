@@ -5,6 +5,13 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
             .catch(error => sendResponse({ success: false, error: error.message }));
         return true; // Keep channel open for async response
     }
+    if (request.action === 'loadPrompt') {
+        // load a local extension prompt file and return its text
+        loadPrompt(request.path)
+            .then(text => sendResponse({ success: true, data: text }))
+            .catch(err => sendResponse({ success: false, error: err.message }));
+        return true;
+    }
 });
 
 async function generateReply({ messages, systemPrompt }) {
@@ -74,4 +81,14 @@ async function generateReply({ messages, systemPrompt }) {
 
     const data = await response.json();
     return data.choices[0].message.content;
+}
+
+async function loadPrompt(path) {
+    // path is relative inside the extension, e.g. 'prompts/rewrite_draft.txt'
+    const url = browser.runtime.getURL(path);
+    const resp = await fetch(url);
+    if (!resp.ok) {
+        throw new Error(`Failed to load prompt: ${resp.status} ${resp.statusText}`);
+    }
+    return await resp.text();
 }

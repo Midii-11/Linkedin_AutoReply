@@ -97,12 +97,26 @@ async function injectToolbar(inputArea) {
         await handleGenerateClick(btn, profile, inputArea);
     };
 
+    // Rewrite Draft Button
+    const rewriteBtn = document.createElement('button');
+    rewriteBtn.className = 'linkedin-autoreply-btn linkedin-autoreply-rewrite';
+    rewriteBtn.style.marginLeft = '8px';
+    rewriteBtn.innerHTML = '<span>Rewrite Draft</span><div class="linkedin-autoreply-spinner"></div>';
+    rewriteBtn.onclick = async () => {
+        if (select.disabled) {
+            alert('Please configure profiles in the extension settings.');
+            return;
+        }
+        await handleRewriteClick(rewriteBtn, inputArea);
+    };
+
     // Status
     const status = document.createElement('span');
     status.className = 'linkedin-autoreply-status';
 
     toolbar.appendChild(select);
     toolbar.appendChild(btn);
+    toolbar.appendChild(rewriteBtn);
     toolbar.appendChild(status);
 
     // Insert before the input form's parent or inside a suitable container
@@ -154,6 +168,58 @@ async function handleGenerateClick(btn, profile, inputArea) {
         btn.disabled = false;
         spinner.style.display = 'none';
         btnText.textContent = 'Generate Reply';
+    }
+}
+
+async function handleRewriteClick(btn, inputArea) {
+    const spinner = btn.querySelector('.linkedin-autoreply-spinner');
+    const btnText = btn.querySelector('span');
+
+    try {
+        // UI Loading State
+        btn.disabled = true;
+        spinner.style.display = 'inline-block';
+        btnText.textContent = 'Rewriting...';
+
+        // Get the current draft from the input area
+        const draft = (inputArea.innerText || inputArea.textContent || '').trim();
+        if (!draft) {
+            throw new Error('No draft found. Please type your message first.');
+        }
+
+        // Load the rewrite prompt via the background script to avoid CSP/network issues
+        const promptResp = await browser.runtime.sendMessage({ action: 'loadPrompt', path: 'prompts/rewrite_draft.txt' });
+        if (!promptResp || !promptResp.success) {
+            throw new Error(promptResp?.error || 'Failed to load rewrite prompt');
+        }
+        const systemPrompt = promptResp.data;
+
+        // Send the draft to the background to rewrite
+        const response = await browser.runtime.sendMessage({
+            action: 'generateReply',
+            data: {
+                messages: [{ role: 'user', content: draft }],
+                systemPrompt: systemPrompt
+            }
+        });
+
+        if (!response.success) {
+            throw new Error(response.error);
+        }
+
+        // Replace the draft with the rewritten text
+        // Clear current content then insert rewritten text
+        inputArea.focus();
+        inputArea.innerHTML = ''; // clear
+        insertText(inputArea, response.data);
+
+    } catch (err) {
+        console.error('LinkedIn AutoReply Rewrite Error:', err);
+        alert('Error: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = 'Rewrite Draft';
     }
 }
 
