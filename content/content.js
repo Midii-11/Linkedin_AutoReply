@@ -187,12 +187,22 @@ async function handleRewriteClick(btn, inputArea) {
             throw new Error('No draft found. Please type your message first.');
         }
 
-        // Load the rewrite prompt via the background script to avoid CSP/network issues
-        const promptResp = await browser.runtime.sendMessage({ action: 'loadPrompt', path: 'prompts/rewrite_draft.txt' });
-        if (!promptResp || !promptResp.success) {
-            throw new Error(promptResp?.error || 'Failed to load rewrite prompt');
+        // Prefer stored rewrite prompt from settings, fallback to the bundled prompt via background loader
+        let systemPrompt = '';
+        try {
+            const stored = await browser.storage.local.get('rewritePrompt');
+            if (stored && stored.rewritePrompt && stored.rewritePrompt.trim()) {
+                systemPrompt = stored.rewritePrompt;
+            } else {
+                const promptResp = await browser.runtime.sendMessage({ action: 'loadPrompt', path: 'prompts/rewrite_draft.txt' });
+                if (!promptResp || !promptResp.success) {
+                    throw new Error(promptResp?.error || 'Failed to load rewrite prompt');
+                }
+                systemPrompt = promptResp.data;
+            }
+        } catch (e) {
+            throw new Error('Failed to load rewrite prompt: ' + e.message);
         }
-        const systemPrompt = promptResp.data;
 
         // Send the draft to the background to rewrite
         const response = await browser.runtime.sendMessage({
