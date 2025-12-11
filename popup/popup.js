@@ -24,15 +24,17 @@ async function restoreSettings() {
 
     profiles = data.profiles || [];
 
-    // Load default profile if empty
+    // Load default profile if empty (use background loader to fetch extension resources)
     if (profiles.length === 0) {
         try {
-            const response = await fetch('../prompts/politely_decline.txt');
-            if (response.ok) {
-                const defaultPrompt = await response.text();
+            const promptResp = await browser.runtime.sendMessage({ action: 'loadPrompt', path: 'prompts/politely_decline.txt' });
+            if (promptResp && promptResp.success) {
+                const defaultPrompt = promptResp.data;
                 profiles.push({ name: 'Politely Decline', systemPrompt: defaultPrompt });
                 // Save immediately so it persists
                 await browser.storage.local.set({ profiles });
+            } else {
+                console.error('Failed to load default prompt:', promptResp?.error);
             }
         } catch (e) {
             console.error('Failed to load default prompt:', e);
