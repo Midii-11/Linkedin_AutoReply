@@ -46,3 +46,4 @@ PLACEHOLDERS AVAILABLE
 OUTPUT
 Produce ONLY the final human-like LinkedIn message.
 Keep it concise, natural, and slightly informal.
+IMPORTANT: Reply in the same language as the conversation history.
