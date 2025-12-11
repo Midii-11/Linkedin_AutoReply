@@ -1,0 +1,74 @@
+.linkedin-autoreply-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background-color: #f3f2ef;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+.linkedin-autoreply-select {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    flex-grow: 1;
+    max-width: 200px;
+}
+
+.linkedin-autoreply-btn {
+    background-color: #0a66c2;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 6px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.linkedin-autoreply-btn:hover {
+    background-color: #004182;
+}
+
+.linkedin-autoreply-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.linkedin-autoreply-status {
+    font-size: 12px;
+    color: #666;
+    margin-left: auto;
+}
+
+/* Spinner */
+.linkedin-autoreply-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #ffffff;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+    display: none;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
